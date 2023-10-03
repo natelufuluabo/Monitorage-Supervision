@@ -188,7 +188,7 @@ async function solution4b() {
     console.log(`Visitors visit ${averageNumOfVisited} ${averageNumOfVisited > 1 ? "rooms" : "room"} on average`);
     console.log(`Visitors spent on average ${averageTime?.hours} ${averageTime?.hours > 1 ? "hrs" : "hr"} and ${averageTime?.minutes} ${averageTime?.minutes > 1 ? "minutes" : "minute"} in the musuem.`);
 } 
-solution4b();
+
 // Solution pour la question 4.c
 async function solution4c() {
     const data = await fetchAllData();
@@ -209,3 +209,34 @@ async function solution4c() {
     console.log(`The visitor who visited the highest number of room is ${visitor?.name}`);
 }
 
+// Solution pour la question 5.a
+async function solution5a() {
+    const events = (await fetchAllData()).events;
+    const visitorRooms = new Map<number, number[]>();
+    const firstRoomCount = new Map<number, number>();
+    const lastRoomCount = new Map<number, number>();
+    events.forEach((event) => {
+        const { roomId, visitorId } = event;
+        if (!visitorRooms.has(visitorId)) {
+            visitorRooms.set(visitorId, [roomId]);
+        } else {
+            const rooms = visitorRooms.get(visitorId);
+            if (rooms) {
+              rooms.push(roomId);
+            }
+        }
+    });
+    for (const value of visitorRooms.values()) {
+        if (value.length > 0) {
+            const firstRoom = value[0];
+            const lastRoom = value[value.length - 1]
+            if (firstRoomCount.has(firstRoom)) firstRoomCount.set(firstRoom, firstRoomCount.get(firstRoom)! + 1);
+            else firstRoomCount.set(firstRoom, 1);
+            if (lastRoomCount.has(lastRoom)) lastRoomCount.set(lastRoom, lastRoomCount.get(lastRoom)! + 1);
+            else lastRoomCount.set(lastRoom, 1);
+        }
+    }
+    console.log(firstRoomCount);
+    console.log(lastRoomCount);
+}
+solution5a();
