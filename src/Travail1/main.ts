@@ -18,7 +18,7 @@ function formatTime(minutes: number) {
     return `${String(hours).padStart(2, "0")}:${String(mins).padStart(2, "0")}`;
 }
 
-async function findOpeningHours() {
+async function solution2a() {
     const data = (await fetchAllData()).events
     const times = data.map((event) => event.time);
 
@@ -35,13 +35,13 @@ async function findOpeningHours() {
 }
 
 // Solution pour la question 2.b
-async function visitorsCount() {
+async function solution2b() {
     const data = (await fetchAllData()).visitors;
     console.log(`The musuem received ${data.length} ${ data.length > 1 ? "people": "person" }`);
 }
 
 // Solution pour la question 3.a
-async function room3VisitorCount() {
+async function solution3a() {
     const data = (await fetchAllData()).events;
     let counter = 0;
     for (let i = 0; i < data.length; i++) {
@@ -51,7 +51,7 @@ async function room3VisitorCount() {
 }
 
 // Solution pour la question 3.b
-async function room3Visitor() {
+async function solution3b() {
     const data: data = await fetchAllData();
     const room3Events: event[] = data.events.filter(event => event.roomId === 3);
     const visitors: string[] = [];
@@ -63,7 +63,7 @@ async function room3Visitor() {
 }
 
 // Solution pour la question 3.c
-async function roomRanking() {
+async function solution3c() {
     const events = (await fetchAllData()).events;
     const newMap = new Map<number, number>();
     events.forEach(event => {
@@ -90,7 +90,7 @@ async function roomRanking() {
 }
 
 // Solution pour la question 4.a
-async function suspectParkour() {
+async function solution4a() {
     const data = await fetchAllData();
     const suspectObj = data.visitors.find(obj => obj.name === "Jessica Daniel");
     let parkourString = "";
@@ -100,8 +100,97 @@ async function suspectParkour() {
     console.log(parkourString);
 }
 
+// Solution pour la question 4.b
+function timeToMinutes(time: string): number {
+    const [hours, minutes] = time.split(":").map(Number);
+    return hours * 60 + minutes;
+}
+
+function calculateTimeDifference(startTime: string, endTime: string): { hours: number; minutes: number } {
+    // Parse the time strings into hours and minutes
+    const startParts = startTime.split(":");
+    const endParts = endTime.split(":");
+    
+    if (startParts.length !== 2 || endParts.length !== 2) {
+      return 
+    }
+  
+    const startHours = parseInt(startParts[0], 10);
+    const startMinutes = parseInt(startParts[1], 10);
+    const endHours = parseInt(endParts[0], 10);
+    const endMinutes = parseInt(endParts[1], 10);
+  
+    // Calculate the time difference
+    let totalMinutes = (endHours * 60 + endMinutes) - (startHours * 60 + startMinutes);
+  
+    // Handle negative time difference (if end time is earlier than start time)
+    if (totalMinutes < 0) {
+      totalMinutes += 24 * 60; // Add 24 hours in minutes
+    }
+  
+    // Convert total minutes to hours and remaining minutes
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+  
+    return { hours, minutes };
+}
+
+function calculateAverageTime(timeList: { hours: number; minutes: number }[]): { hours: number; minutes: number } | null {
+    if (timeList.length === 0) {
+      return null; // Handle empty list
+    }
+  
+    let totalHours = 0;
+    let totalMinutes = 0;
+  
+    for (const time of timeList) {
+      totalHours += time.hours;
+      totalMinutes += time.minutes;
+    }
+  
+    // Calculate the average
+    const averageHours = Math.floor(totalHours / timeList.length);
+    const averageMinutes = Math.floor(totalMinutes  / timeList.length);
+
+  
+    return { hours: averageHours, minutes: averageMinutes };
+}
+
+async function solution4b() {
+    const events = (await fetchAllData()).events;
+    const visitorRoomsMap = new Map<number, number>();
+    const visitorTimesMap = new Map<number, { earliestTime: string, latestTime: string }>();
+
+    events.forEach(event => {
+        if (!visitorRoomsMap.has(event.visitorId)) visitorRoomsMap.set(event.visitorId, 1)
+        else visitorRoomsMap.set(event.visitorId, visitorRoomsMap.get(event.visitorId) + 1)
+        if (visitorTimesMap.has(event.visitorId)) {
+            const visitorData = visitorTimesMap.get(event.visitorId);
+            const eventMinutes = timeToMinutes(event.time);
+            if (eventMinutes < timeToMinutes(visitorData.earliestTime)) {
+              visitorData.earliestTime = event.time;
+            }
+            if (eventMinutes > timeToMinutes(visitorData.latestTime)) {
+              visitorData.latestTime = event.time;
+            }
+          } else {
+            visitorTimesMap.set(event.visitorId, { earliestTime: event.time, latestTime: event.time });
+          }
+    });
+    const numOfRoomVisited = Array.from(visitorRoomsMap.values());
+    const timeSpentInMusuem: { hours: number, minutes: number }[] = [];
+    for (const value of visitorTimesMap.values()) {
+        const { earliestTime, latestTime } = value;
+        timeSpentInMusuem.push(calculateTimeDifference(earliestTime, latestTime));
+    }
+    const averageNumOfVisited = Math.floor((numOfRoomVisited.reduce((total, number) => total + number, 0)) / numOfRoomVisited.length);
+    const averageTime = calculateAverageTime(timeSpentInMusuem);
+    console.log(`Visitors visit ${averageNumOfVisited} ${averageNumOfVisited > 1 ? "rooms" : "room"} on average`);
+    console.log(`Visitors spent on average ${averageTime?.hours} ${averageTime?.hours > 1 ? "hrs" : "hr"} and ${averageTime?.minutes} ${averageTime?.minutes > 1 ? "minutes" : "minute"} in the musuem.`);
+} 
+solution4b();
 // Solution pour la question 4.c
-async function visitorWhoVisitedMostRooms() {
+async function solution4c() {
     const data = await fetchAllData();
     const newMap = new Map<number, number>();
     data.events.forEach(event => {
@@ -120,4 +209,3 @@ async function visitorWhoVisitedMostRooms() {
     console.log(`The visitor who visited the highest number of room is ${visitor?.name}`);
 }
 
-visitorWhoVisitedMostRooms();
