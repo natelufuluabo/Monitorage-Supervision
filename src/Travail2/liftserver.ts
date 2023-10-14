@@ -1,3 +1,4 @@
+// deno-lint-ignore-file no-unused-vars
 import express, { Response, Request } from 'npm:express@4';
 const app = express();
 const port = 8000;
