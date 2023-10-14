@@ -13,6 +13,30 @@ class LiftClient {
         return data;
     }
 
+    async getLiftAtLevel(floor: number): Promise<lift[]> {
+        const lifts = await fetch(`${this.host}?foor=${floor}`);
+        const data = await lifts.json();
+        return data;
+    }
+
+    async getLiftAtLevelAbove(min_floor: number): Promise<lift[]> {
+        const lifts = await fetch(`${this.host}?min_floor=${min_floor}`);
+        const data = await lifts.json();
+        return data;
+    }
+
+    async getLiftAtLevelBelow(max_floor: number): Promise<lift[]> {
+        const lifts = await fetch(`${this.host}?max_floor=${max_floor}`);
+        const data = await lifts.json();
+        return data;
+    }
+
+    async getLiftDirection(direction: string): Promise<lift[]> {
+        const lifts = await fetch(`${this.host}?direction=${direction}`);
+        const data = await lifts.json();
+        return data;
+    }
+
     async getLiftDetail(id: number): Promise<liftDetail> {
         const lift = await fetch(`${this.host}/${id}`);
         const data = await lift.json();
