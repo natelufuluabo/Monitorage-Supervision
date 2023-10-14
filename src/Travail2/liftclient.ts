@@ -1,14 +1,4 @@
-type lift = {
-    id: number,
-    level: number
-}
-
-type liftDetail = {
-    id: number,
-    level: number,
-    direction: string,
-    destinations: string[]
-}
+import { lift, liftDetail } from './utils/types.ts';
 
 class LiftClient {
     host: string;
