@@ -236,6 +236,7 @@ async function solution5a() {
             else lastRoomCount.set(lastRoom, 1);
         }
     }
+    // console.log(visitorRooms);
     console.log(firstRoomCount);
     console.log(lastRoomCount);
 }
