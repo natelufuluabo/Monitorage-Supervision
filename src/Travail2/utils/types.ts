@@ -7,5 +7,5 @@ export type liftDetail = {
     id: number,
     level: number,
     direction: string,
-    destinations: string[]
+    destinations: number[]
 }
