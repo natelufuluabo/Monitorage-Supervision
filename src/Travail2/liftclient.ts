@@ -13,7 +13,7 @@ class LiftClient {
         return data;
     }
 
-    async getLift(id: number): Promise<liftDetail> {
+    async getLiftDetail(id: number): Promise<liftDetail> {
         const lift = await fetch(`${this.host}/${id}`);
         const data = await lift.json();
         return data;
@@ -23,4 +23,4 @@ class LiftClient {
 const liftClient = new LiftClient('http://localhost:8000/api/v1/lifts');
 
 console.log(await liftClient.getLiftsList());
-console.log(await liftClient.getLift(3));
+console.log(await liftClient.getLiftDetail(3));
