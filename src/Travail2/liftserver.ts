@@ -42,4 +42,11 @@ app.get('/api/v1/lifts/:id', function(req: Request, res: Response): liftDetail {
     return res.json(lift);
 });
 
+app.post('/api/v1/lifts/:id', function(req: Request, res: Response): liftDetail {
+    const id = Number(req.params.id);
+    const newLevel = Number(req.body.level);
+    const updatedLift = { ...liftDetailsList.find(lift => lift.id === id), action: 'lift-move', level: newLevel };
+    return res.json(updatedLift);
+});
+
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))
