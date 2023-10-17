@@ -55,9 +55,22 @@ class LiftClient {
         const data = await lift.json();
         return data;
     }
+
+    async openLiftDoors(id:number): Promise<liftDetail> {
+        const newAction = { action: 'door-open' }
+        const lift = await fetch(`${this.host}/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(newAction)
+        });
+        const data = await lift.json();
+        return data;
+    }
 }
 
 const liftClient = new LiftClient('http://localhost:8000/api/v1/lifts');
 
-console.log(await liftClient.updateLiftLevel(3, 6));
+console.log(await liftClient.openLiftDoors(3));
 console.log(await liftClient.getLiftsList());

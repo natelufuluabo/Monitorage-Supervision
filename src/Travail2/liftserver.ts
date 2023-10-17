@@ -71,20 +71,35 @@ app.get('/api/v1/lifts/:id', function(req: Request, res: Response): liftDetail {
     return res.json({ "error": "Not Found." });
 });
 
-app.put('/api/v1/lifts/:id', function(req: Request, res: Response) {
+app.put('/api/v1/lifts/:id', function(req: Request, res: Response): liftDetail {
     const id = Number(req.params.id);
-    const newLevel = Number(req.body.level);
-    if (req.body.action === 'door-open') {
-        const index = liftDetailsList.findIndex(lift => lift.id === id);
+    const body = req.body;
+    const index = liftDetailsList.findIndex(lift => lift.id === id);
+    if (body.action === 'door-open') {
         if (index !== -1) {
-            const updatedLift = { ...liftDetailsList[index], action: req.body.action, direction: 'IDLE' };
+            const updatedLift: liftDetail = { 
+                ...liftDetailsList[index], 
+                destinations: liftDetailsList[index].level === liftDetailsList[index].destinations[0] ? liftDetailsList[index].destinations.splice(1) : liftDetailsList[index].destinations, 
+                action: body.action, direction: 'IDLE' 
+            };
             liftDetailsList[index] = updatedLift;
             return res.json(updatedLift);
         } 
+        return res.json({ "error": "Not Found." });
     }
-    const index = liftDetailsList.findIndex(lift => lift.id === id);
+    if (body.action === 'add-destination') {
+        if (index !== -1) {
+            const updatedLift: liftDetail = { 
+                ...liftDetailsList[index], 
+                destinations: liftDetailsList[index].destinations.concat(body.destination), 
+                action: body.action, 
+            };
+            liftDetailsList[index] = updatedLift;
+            return res.json(updatedLift);
+        }
+    }
     if (index !== -1) {
-        const updatedLift = { ...liftDetailsList[index], action: 'lift-move', level: newLevel };
+        const updatedLift = { ...liftDetailsList[index], action: 'lift-move', level: body.level };
         liftDetailsList[index] = updatedLift;
         return res.json(updatedLift);
     }
