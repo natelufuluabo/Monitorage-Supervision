@@ -68,9 +68,25 @@ class LiftClient {
         const data = await lift.json();
         return data;
     }
+
+    async addDestination(id: number, destination: number): Promise<liftDetail> {
+        const newDestination = { 
+            action: 'add-destination',
+            destination: destination 
+        }
+        const lift = await fetch(`${this.host}/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(newDestination)
+        });
+        const data = await lift.json();
+        return data;
+    }
 }
 
 const liftClient = new LiftClient('http://localhost:8000/api/v1/lifts');
 
-console.log(await liftClient.openLiftDoors(3));
+console.log(await liftClient.addDestination(2, 16));
 console.log(await liftClient.getLiftsList());
