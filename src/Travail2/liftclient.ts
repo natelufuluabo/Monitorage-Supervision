@@ -42,9 +42,22 @@ class LiftClient {
         const data = await lift.json();
         return data;
     }
+
+    async updateLiftLevel(id:number, level: number): Promise<liftDetail> {
+        const newLevel = { level: level }
+        const lift = await fetch(`${this.host}/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(newLevel)
+        });
+        const data = await lift.json();
+        return data;
+    }
 }
 
 const liftClient = new LiftClient('http://localhost:8000/api/v1/lifts');
 
+console.log(await liftClient.updateLiftLevel(3, 6));
 console.log(await liftClient.getLiftsList());
-console.log(await liftClient.getLiftDetail(3));

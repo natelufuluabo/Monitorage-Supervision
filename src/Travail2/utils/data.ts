@@ -1,13 +1,7 @@
-import { lift, liftDetail } from './types.ts';
+// deno-lint-ignore-file prefer-const
+import { liftDetail } from './types.ts';
 
-export const liftsList: lift[] = [
-    {"id": 1, "level": 3},
-    {"id": 2, "level": 7},
-    {"id": 3, "level": 10},
-    {"id": 4, "level": 12}
-];
-
-export const liftDetailsList: liftDetail[] = [
+export let liftDetailsList: liftDetail[] = [
     {
         "id": 1,
         "level": 3,
