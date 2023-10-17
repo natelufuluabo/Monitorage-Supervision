@@ -1,7 +1,7 @@
 import express, { Response, Request } from 'npm:express@4';
 import bodyParser from "npm:body-parser@1.20.1"
-import { lift, liftDetail } from './utils/types.ts';
-import { liftDetailsList } from './utils/data.ts';
+import { lift, liftDetail, liftRequest } from './utils/types.ts';
+import { liftDetailsList, liftRequests } from './utils/data.ts';
 
 const app = express();
 const port = 8000;
@@ -69,6 +69,14 @@ app.get('/api/v1/lifts/:id', function(req: Request, res: Response): liftDetail {
     const lift = liftDetailsList.find(lift => lift.id === id);
     if (lift) return res.json(lift);
     return res.json({ "error": "Not Found." });
+});
+
+app.post('/api/v1/lift-requests', function(req: Request, res: Response): liftRequest {
+    const body: liftRequest = req.body;
+    console.log(liftRequests);
+    liftRequests.concat(body);
+    console.log(liftRequests);
+    return res.json(body);
 });
 
 app.put('/api/v1/lifts/:id', function(req: Request, res: Response): liftDetail {

@@ -1,5 +1,7 @@
 // deno-lint-ignore-file prefer-const
-import { liftDetail } from './types.ts';
+import { liftDetail, liftRequest } from './types.ts';
+
+export let liftRequests: liftRequest[] = [];
 
 export let liftDetailsList: liftDetail[] = [
     {
