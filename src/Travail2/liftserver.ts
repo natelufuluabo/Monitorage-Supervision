@@ -74,7 +74,14 @@ app.get('/api/v1/lifts/:id', function(req: Request, res: Response): liftDetail {
 app.put('/api/v1/lifts/:id', function(req: Request, res: Response) {
     const id = Number(req.params.id);
     const newLevel = Number(req.body.level);
-    console.log(req.body, newLevel);
+    if (req.body.action === 'door-open') {
+        const index = liftDetailsList.findIndex(lift => lift.id === id);
+        if (index !== -1) {
+            const updatedLift = { ...liftDetailsList[index], action: req.body.action, direction: 'IDLE' };
+            liftDetailsList[index] = updatedLift;
+            return res.json(updatedLift);
+        } 
+    }
     const index = liftDetailsList.findIndex(lift => lift.id === id);
     if (index !== -1) {
         const updatedLift = { ...liftDetailsList[index], action: 'lift-move', level: newLevel };
