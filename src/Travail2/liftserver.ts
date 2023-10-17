@@ -91,8 +91,9 @@ app.put('/api/v1/lifts/:id', function(req: Request, res: Response): liftDetail {
         if (index !== -1) {
             const updatedLift: liftDetail = { 
                 ...liftDetailsList[index], 
+                direction: liftDetailsList[index].destinations.length === 0 ? (liftDetailsList[index].level > body.destination ? "DOWN" : "UP") : liftDetailsList[index].direction,
                 destinations: liftDetailsList[index].destinations.concat(body.destination), 
-                action: body.action, 
+                action: body.action,  
             };
             liftDetailsList[index] = updatedLift;
             return res.json(updatedLift);
