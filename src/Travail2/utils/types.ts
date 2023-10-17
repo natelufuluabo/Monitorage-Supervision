@@ -10,3 +10,9 @@ export type liftDetail = {
     destinations: number[],
     action?: string
 }
+
+export type liftRequest = {
+    action: string,
+    level: number,
+    direction: "UP" | "DOW"
+}
