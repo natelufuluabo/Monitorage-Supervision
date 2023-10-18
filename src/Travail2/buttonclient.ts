@@ -7,6 +7,12 @@ class ButtonClient {
         this.host = host;
     }
 
+    async getLiftRquestsList(): Promise<liftRequest[]> {
+        const liftRquestsList = await fetch(this.host);
+        const data = await liftRquestsList.json();
+        return data;
+    }
+
     async saveLiftRequest(liftRequest: liftRequest): Promise<liftRequest> {
         const lift = await fetch(this.host, {
             method: 'POST',
@@ -28,3 +34,4 @@ const liftRequest: liftRequest = {
     "direction": "UP"
 }
 console.log(await buttonClient.saveLiftRequest(liftRequest));
+console.log(await buttonClient.getLiftRquestsList());
