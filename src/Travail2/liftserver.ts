@@ -1,3 +1,4 @@
+// deno-lint-ignore-file no-unused-vars
 import express, { Response, Request } from 'npm:express@4';
 import bodyParser from "npm:body-parser@1.20.1"
 import { lift, liftDetail, liftRequest } from './utils/types.ts';
@@ -70,6 +71,10 @@ app.get('/api/v1/lifts/:id', function(req: Request, res: Response): liftDetail {
     if (lift) return res.json(lift);
     return res.json({ "error": "Not Found." });
 });
+
+app.get('/api/v1/lift-requests', function(req: Request, res: Response): liftRequest[] {
+    return res.json(liftRequests);
+})
 
 app.post('/api/v1/lift-requests', function(req: Request, res: Response): liftRequest {
     const body: liftRequest = req.body;
