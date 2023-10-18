@@ -73,9 +73,7 @@ app.get('/api/v1/lifts/:id', function(req: Request, res: Response): liftDetail {
 
 app.post('/api/v1/lift-requests', function(req: Request, res: Response): liftRequest {
     const body: liftRequest = req.body;
-    console.log(liftRequests);
-    liftRequests.concat(body);
-    console.log(liftRequests);
+    liftRequests.push(body);
     return res.json(body);
 });
 
