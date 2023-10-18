@@ -73,7 +73,11 @@ app.get('/api/v1/lifts/:id', function(req: Request, res: Response): liftDetail {
 });
 
 app.get('/api/v1/lift-requests', function(req: Request, res: Response): liftRequest[] {
-    return res.json(liftRequests);
+    const data = liftRequests.map(item => ({
+        level: item.level,
+        direction: item.direction
+    }));
+    return res.json(data);
 })
 
 app.post('/api/v1/lift-requests', function(req: Request, res: Response): liftRequest {
