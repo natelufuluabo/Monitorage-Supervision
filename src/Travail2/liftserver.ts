@@ -95,7 +95,7 @@ app.put('/api/v1/lifts/:id', function(req: Request, res: Response): liftDetail {
             const updatedLift: liftDetail = { 
                 ...liftDetailsList[index], 
                 destinations: liftDetailsList[index].level === liftDetailsList[index].destinations[0] ? liftDetailsList[index].destinations.splice(1) : liftDetailsList[index].destinations, 
-                action: body.action, direction: 'IDLE' 
+                action: body.action, direction: liftDetailsList[index].level >= liftDetailsList[index].destinations[0] ? "DOWN" : "UP" 
             };
             liftDetailsList[index] = updatedLift;
             return res.json(updatedLift);
