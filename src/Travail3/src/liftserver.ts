@@ -1,5 +1,6 @@
 import express, { Express, Request, Response , Application } from 'express';
 import dotenv from 'dotenv';
+import { connectToDatabase } from './db';
 import {Lift, LiftFilterCriteron, LiftRequest, SmallLiftRepresentation} from "./shared";
 
 dotenv.config();
@@ -7,6 +8,8 @@ dotenv.config();
 const app: Application = express()
 
 const port = process.env.PORT || 3000;
+
+connectToDatabase();
 
 type LiftSearchRequestParams = {
     floor?: string,
