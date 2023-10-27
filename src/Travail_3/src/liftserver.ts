@@ -1,15 +1,13 @@
-import express, { Express, Request, Response , Application } from 'express';
-import dotenv from 'dotenv';
-import { connectToDatabase } from './db';
-import {Lift, LiftFilterCriteron, LiftRequest, SmallLiftRepresentation} from "./shared";
+import express, {Response, Request} from "npm:express";
+import bodyParser from "npm:body-parser";
+import { db } from "./db.ts";
+import { MongoButtonService } from "./mongoButtonService.ts";
+import {Lift, LiftFilterCriteron, LiftRequest, SmallLiftRepresentation} from "./shared.ts";
 
-dotenv.config();
+const app = express()
+app.use(bodyParser.json());
 
-const app: Application = express()
-
-const port = process.env.PORT || 3000;
-
-connectToDatabase();
+const port = 3000;
 
 type LiftSearchRequestParams = {
     floor?: string,
@@ -241,7 +239,8 @@ function isValidAction(action?: LiftAction): boolean {
 
 const liftService = createLiftService();
 
-const buttonService = new InMemoryButtonService();
+// const buttonService = new InMemoryButtonService();
+const buttonService = new MongoButtonService(db);
 
 function send404(res: Response): void {
     res.status(404);
@@ -302,5 +301,5 @@ app.post('/api/v1/lift-requests',  async (req: Request, res: Response): Promise<
 });
 
 app.listen(port, () => {
-    console.log(`app listening on port ${port}`)
+    console.log(`Example app listening on port ${port}`)
 })
