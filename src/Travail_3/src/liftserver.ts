@@ -2,7 +2,8 @@ import express, {Response, Request} from "npm:express";
 import bodyParser from "npm:body-parser";
 import { db } from "./db.ts";
 import { MongoButtonService } from "./mongoButtonService.ts";
-import {Lift, LiftFilterCriteron, LiftRequest, SmallLiftRepresentation} from "./shared.ts";
+import { MongoLiftService } from "./mongoLiftService.ts";
+import {Lift, LiftFilterCriteron, LiftRequest, SmallLiftRepresentation, LiftUtilService} from "./shared.ts";
 
 const app = express()
 app.use(bodyParser.json());
@@ -22,172 +23,18 @@ type LiftAction = {
     destination?: number,
 }
 
-class LiftUtilService{
-
-    private isBetween(x: number, min_: number, max_: number): boolean{
-        return min_ < x && x < max_;
-    }
-
-    addDestination(destinations: number[], currentLevel: number, newDestination: number){
-        if(destinations.length === 0){
-            return [newDestination];
-        }
-        if(destinations.includes(newDestination)){
-            return destinations;
-        }
-
-        const firstDestination = destinations[0];
-        if(this.isBetween(newDestination, currentLevel, firstDestination)){
-            return [newDestination].concat(destinations);
-
-        }
-        for(let i = 0; i < destinations.length - 1; i++){
-            const first = destinations[i];
-            const second = destinations[i + 1];
-            if(this.isBetween(newDestination, first, second)){
-                const firstPart = destinations.slice(0, i + 1);
-                const secondPart = destinations.slice(i + 1);
-                return firstPart.concat([newDestination]).concat(secondPart);
-            }
-        }
-        return destinations.concat([newDestination]);
-    }
-
-    computeDirection(lift: Lift): string {
-        if(lift.destinations.length === 0){
-            return "IDLE";
-        }
-        const nextDestination = lift.destinations[0];
-        if(nextDestination === lift.level){
-            return lift.direction;
-        }
-        if(nextDestination > lift.level){
-            return "UP";
-        }
-        return "DOWN";
-    }
-
-    removeFromArray(lst: number[], toRemove: number): number[] {
-        const ret: number[] = [];
-        for(const e of lst){
-            if(e !== toRemove){
-                ret.push(e);
-            }
-        }
-        return ret
-    }
-
-}
-
-class InMemoryButtonService{
-    private readonly liftRequests : LiftRequest[] = [];
-
-    getLiftRequests(): Promise<LiftRequest[]>{
-        return Promise.resolve(this.liftRequests);
-    }
-
-    addLiftRequest(liftRequest: LiftRequest): Promise<boolean>{
-        for(const lr of this.liftRequests){
-            if(lr.level === liftRequest.level && lr.direction === liftRequest.direction){
-                return Promise.resolve(false);
-            }
-        }
-        this.liftRequests.push(liftRequest);
-        return Promise.resolve(true);
-    }
-}
-
-class InMemoryLiftService {
-
-    private readonly lifts: Lift[];
-    private readonly liftUtilService: LiftUtilService;
-
-    constructor(lifts: Lift[]) {
-        this.lifts = lifts;
-        this.liftUtilService = new LiftUtilService();
-    }
-
-    getAllLifts(): Promise<Lift[]> {
-        return Promise.resolve(this.lifts);
-    }
-    async processAddDestination(liftId: number, level: number): Promise<boolean> {
-        const lift = await this.getElevatorById(liftId);
-        if(!lift){
-            return Promise.resolve(false);
-        }
-        lift.destinations = this.liftUtilService.addDestination(lift.destinations, lift.level, level);
-        lift.direction = this.liftUtilService.computeDirection(lift);
-        return Promise.resolve(true);
-    }
-
-    async processDoorOpen(liftId: number, level: number): Promise<boolean> {
-        const lift = await this.getElevatorById(liftId);
-        if(!lift){
-            return Promise.resolve(false);
-        }
-        lift.destinations = this.liftUtilService.removeFromArray(lift.destinations, level);
-        lift.direction = this.liftUtilService.computeDirection(lift);
-        return Promise.resolve(true);
-    }
-
-    async processLiftMovement(liftId: number, level: number): Promise<boolean> {
-        const lift = await this.getElevatorById(liftId);
-        if(!lift){
-            return Promise.resolve(false);
-        }
-        lift.level = level;
-        return Promise.resolve(true);
-    }
-
-    private matches(lift: Lift, liftFilterCriteria: LiftFilterCriteron) {
-        if (liftFilterCriteria.floor !== undefined && lift.level != liftFilterCriteria.floor) {
-            return false;
-        }
-
-        if (liftFilterCriteria.min_floor !== undefined && lift.level < liftFilterCriteria.min_floor) {
-            return false;
-        }
-
-        if (liftFilterCriteria.max_floor !== undefined && lift.level > liftFilterCriteria.max_floor) {
-            return false;
-        }
-
-        if (liftFilterCriteria.direction !== undefined && lift.direction !== liftFilterCriteria.direction) {
-            return false;
-        }
-
-        return true;
-    }
-
-    getAllLiftsMatching(liftFilterCriteria: LiftFilterCriteron): Promise<Lift[]> {
-        const ret: Lift[] = [];
-        for (const lift of this.lifts) {
-            if (this.matches(lift, liftFilterCriteria)) {
-                ret.push(lift);
-            }
-        }
-        return Promise.resolve(ret);
-    }
-
-    getElevatorById(id: number): Promise<Lift | null> {
-        for (const lift of this.lifts) {
-            if (lift.id === id) {
-                return Promise.resolve(lift);
-            }
-        }
-        return Promise.resolve(null);
-    }
-}
-
-
-function createLiftService(): InMemoryLiftService {
-    const defaultLifts: Lift[] = [
+async function createInMemoryLiftService() {
+    await db.collection("lifts").createIndex({id: 1}, {unique: true});
+    const defaultLifts = [
         {id: 1, level: 12, direction: 'IDLE', destinations: []},
         {id: 2, level: -1, direction: 'IDLE', destinations: []},
         {id: 3, level: 5, direction: 'IDLE', destinations: []},
         {id: 4, level: 17, direction: 'IDLE', destinations: []},
     ];
-    return new InMemoryLiftService(defaultLifts);
+    for(const lift of defaultLifts){
+        await db.collection("lifts").updateOne({id: lift.id}, {"$setOnInsert": lift}, {upsert: true});
+    }
+    return new MongoLiftService(db);
 }
 
 function toSmallRepresentation(lifts: Lift[]): SmallLiftRepresentation[] {
@@ -237,9 +84,8 @@ function isValidAction(action?: LiftAction): boolean {
     return false;
 }
 
-const liftService = createLiftService();
+const liftService = createInMemoryLiftService();
 
-// const buttonService = new InMemoryButtonService();
 const buttonService = new MongoButtonService(db);
 
 function send404(res: Response): void {
@@ -255,13 +101,13 @@ function send400(res: Response): void {
 app.get('/api/v1/lifts', async (req: Request, res: Response): Promise<void> => {
     const query = req.query as LiftSearchRequestParams;
     const criterion = liftSearchRequestParamsToLiftFilterCriteria(query);
-    const ret = await liftService.getAllLiftsMatching(criterion);
+    const ret = await (await liftService).getAllLiftsMatching(criterion);
     res.send({lifts: toSmallRepresentation(ret)})
 });
 
 app.get('/api/v1/lifts/:id', async (req: Request<{ id: string }>, res: Response): Promise<void> => {
     const id = req.params.id;
-    const ret = await liftService.getElevatorById(parseInt(id));
+    const ret = await (await liftService).getElevatorById(parseInt(id));
     if (ret == null) {
         return send404(res);
     }
@@ -270,7 +116,7 @@ app.get('/api/v1/lifts/:id', async (req: Request<{ id: string }>, res: Response)
 
 app.post('/api/v1/lifts/:id', async (req: Request<{ id: string }>, res: Response): Promise<void> => {
     const id = parseInt(req.params.id);
-    const ret = await liftService.getElevatorById(id);
+    const ret = await (await liftService).getElevatorById(id);
     if (ret == null) {
         return send404(res);
     }
@@ -279,16 +125,16 @@ app.post('/api/v1/lifts/:id', async (req: Request<{ id: string }>, res: Response
         return send400(res)
     }
     if(action.type === 'lift-move'){
-        await liftService.processLiftMovement(id, action.level!);
+        await (await liftService).processLiftMovement(id, action.level!);
     }
     if(action.type === 'door-open'){
-        await liftService.processDoorOpen(id, action.level!);
+        await (await liftService).processDoorOpen(id, action.level!);
     }
     if(action.type === 'add-destination'){
-        await liftService.processAddDestination(id, action.destination!);
+        await (await liftService).processAddDestination(id, action.destination!);
     }
 
-    res.send(ret)
+    res.send(await (await liftService).getElevatorById(id))
 });
 
 app.get('/api/v1/lift-requests',  async (_req: Request, res: Response): Promise<void> => {
