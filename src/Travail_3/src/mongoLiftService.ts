@@ -1,5 +1,6 @@
 import { Collection, Db, WithId } from 'npm:mongodb';
-import { Lift, LiftFilterCriteron, LiftUtilService } from "./shared.ts";
+import { Lift, LiftFilterCriteron } from "./utils/types.ts";
+import { LiftUtilService } from "./utils/classes.ts";
 
 export class MongoLiftService {
     mongoConnection: Db;

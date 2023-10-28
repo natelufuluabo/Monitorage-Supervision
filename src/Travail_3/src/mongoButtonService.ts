@@ -1,5 +1,5 @@
 import { Collection, Db, WithId } from 'npm:mongodb';
-import { LiftRequest } from "./shared.ts";
+import { LiftRequest } from "./utils/types.ts";
 
 export class MongoButtonService {
     mongoConnection: Db;
